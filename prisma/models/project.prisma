@@ -1,0 +1,17 @@
+model Project {
+  id            String          @id @default(cuid())
+  name          String?
+
+  pgConfig      Json
+  pgInit        Boolean
+  influxConfig  Json
+  influxInit    Boolean
+  s3Config      Json
+  s3Init        Boolean
+
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
