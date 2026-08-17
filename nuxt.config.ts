@@ -35,4 +35,7 @@ export default defineNuxtConfig({
       stylistic: true,
     },
   },
+  fonts: {
+    provider: 'google',
+  },
 })

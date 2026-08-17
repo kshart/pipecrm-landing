@@ -1,0 +1,50 @@
+name: Nuxt release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 26.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 26.x
+    - name: Make
+      working-directory: ./
+      run: |
+        npm ci
+        npx prisma generate
+        npm run build
+    - name: Build
+      run: |
+        mkdir release
+        mv ./.output ./release
+        cp ./ecosystem.config.cjs ./release
+        tar -zcvf pipecrm-landing.${{ github.ref_name }}.tar.gz ./release
+        rm -rf ./release
+    - name: Publish
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref_name }}
+        body: |
+          Это релиз
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./pipecrm-landing.${{ github.ref_name }}.tar.gz
+        asset_name: pipecrm-landing.${{ github.ref_name }}.tar.gz
+        asset_content_type: application/x-gzip
